@@ -1,0 +1,17 @@
+{
+  "name": "regularjs-loader",
+  "version": "0.0.0",
+  "description": "webpack loader for regularjs",
+  "main": "index.js",
+  "scripts": {
+  },
+  "author": "fengzilong",
+  "license": "MIT",
+  "dependencies": {
+    "loader-utils": "^0.2.15",
+    "object-assign": "^4.1.0",
+    "parse5": "^2.1.5"
+  },
+  "devDependencies": {
+  }
+}
