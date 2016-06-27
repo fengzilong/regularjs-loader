@@ -1,27 +1,32 @@
 var loaderUtils = require( 'loader-utils' );
 var parse = require( './parser' );
 var assign = require('object-assign');
+var es6Promise = require('es6-promise');
+
+es6Promise.polyfill();
 
 module.exports = function( content ) {
 	this.cacheable();
 
 	var loaderContext = this;
-	var filePath = this.resourcePath
-
+	var filePath = this.resourcePath;
+	var selectorPath = require.resolve( './selector' );
+	var regularjsHtmlLoaderPath = require.resolve( './regularjs-html-loader' );
 	var defaultLoaders = {
-		html: 'html-loader',
+		html: 'rgl-loader!' + regularjsHtmlLoaderPath,
 		css: 'style-loader!css-loader',
 		js: 'babel-loader?presets[]=es2015&plugins[]=transform-runtime&comments=false'
-	}
-
+	};
 	var defaultLang = {
 		template: 'html',
 		style: 'css',
 		script: 'js'
+	};
+
+	if( this.sourceMap && !this.minimize ) {
+		defaultLoaders.css = 'style-loader!css-loader?sourceMap';
 	}
 
-	var selectorPath = require.resolve( './selector' );
-	var rewriterInjectRE = /\b((css|html)(-loader)?(\?[^!]+)?)(?:!|$)/
 	var loaders = assign( {}, defaultLoaders );
 
 	function getSelectorString( type, index ) {
@@ -85,11 +90,16 @@ module.exports = function( content ) {
 
 	var output = 'var __regular_script__, __regular_template__, __Component__;\n';
 
+	// require style
+	parts.style.forEach(function( style, i ) {
+		output += getRequire( 'style', style, i );
+	});
+
 	// require script
 	var script;
 	if (parts.script.length) {
 		script = parts.script[0];
-		output += '__regular_script__ =' + getRequire( 'script', script, 0 );
+		output += '__regular_script__ = ' + getRequire( 'script', script, 0 );
 	}
 
 	// require template
@@ -108,8 +118,10 @@ module.exports = function( content ) {
 		'if( typeof rs === "object" ) {\n' +
 		'	rs.template = __regular_template__;\n' +
 		'	__Component__ = Regular.extend(rs);\n' +
-		'	for( var i in rs.component ) {\n' +
-		'		__Component__.component(i, rs.component[ i ]);\n' +
+		'	if( typeof rs.component === "object" ) {\n' +
+		'		for( var i in rs.component ) {\n' +
+		'			__Component__.component(i, rs.component[ i ]);\n' +
+		'		}\n' +
 		'	}\n' +
 		'}\n';
 
