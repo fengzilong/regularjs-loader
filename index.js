@@ -112,7 +112,6 @@ module.exports = function( content ) {
 	// find Regular
 	output += 'var Regular = require( "regularjs" );\n';
 
-	// TODO: 如果rs是组件构造函数，需要regularjs本身提供一个设置模板的方法
 	output += 'var rs = __regular_script__;\n' +
 		'if (rs.__esModule) rs = rs.default;\n' +
 		'if( typeof rs === "object" ) {\n' +
@@ -123,6 +122,9 @@ module.exports = function( content ) {
 		'			__Component__.component(i, rs.component[ i ]);\n' +
 		'		}\n' +
 		'	}\n' +
+		'} else if( typeof rs === "function" && ( rs.prototype instanceof Regular ) ) {\n' +
+		'	rs.prototype.template = __regular_template__;\n' +
+		'	__Component__ = rs;\n' +
 		'}\n';
 
 	output += 'module.exports = __Component__;';
