@@ -3,6 +3,7 @@ var parse = require( './parser' );
 var assign = require('object-assign');
 var hash = require('hash-sum');
 var es6Promise = require('es6-promise');
+var path = require('path')
 
 es6Promise.polyfill();
 
@@ -10,8 +11,11 @@ module.exports = function( content ) {
 	this.cacheable();
 
 	var loaderContext = this;
+	var options = this.options.regularjs || {};
 	var filePath = this.resourcePath;
+	var fileName = path.basename( filePath );
 	var moduleId = '_r-' + hash( filePath );
+	var rewriterInjectRE = /\b(css(-loader)?(\?[^!]+)?)(?:!|$)/
 	var selectorPath = require.resolve( './selector' );
 	var precompileLoaderPath = require.resolve( './precompile' );
 	// use modified html-loader
@@ -35,7 +39,7 @@ module.exports = function( content ) {
 		defaultLoaders.css = 'style-loader!css-loader?sourceMap';
 	}
 
-	var loaders = assign( {}, defaultLoaders );
+	var loaders = assign( {}, defaultLoaders, options.loaders );
 
 	function getSelectorString( type, index ) {
 		return selectorPath +
@@ -68,15 +72,18 @@ module.exports = function( content ) {
 		var loader = loaders[lang]
 		var rewriter = getRewriter( type, scoped )
 		if (loader !== undefined) {
-			switch( type ) {
-				case 'template':
-					loader = rewriter + ensureBang( loader )
-					break;
-				case 'style':
-				case 'script':
-					loader = ensureBang( loader ) + rewriter
-					break;
+			if( type === 'style' && rewriterInjectRE.test( loader ) ) {
+				// ensure rewriter is executed before css-loader
+				loader = loader.replace(rewriterInjectRE, function (m, $1) {
+					return ensureBang($1) + rewriter
+				})
+			} else if( type === 'template' ) {
+				// can not change loaders for template
+				loader = rewriter + ensureBang( defaultLoaders.html )
+			} else {
+				loader = ensureBang( loader ) + rewriter
 			}
+
 			return ensureBang( loader )
 		} else {
 			// unknown lang, infer the loader to be used
@@ -84,9 +91,9 @@ module.exports = function( content ) {
 				case 'template':
 					return rewriter + defaultLoaders.html + '!'
 				case 'style':
-					return defaultLoaders.css + '!' + rewriter
+					return defaultLoaders.css + '!' + rewriter + lang + '!'
 				case 'script':
-					return ''
+					return lang + '!'
 			}
 		}
 	}
@@ -110,7 +117,7 @@ module.exports = function( content ) {
 			')\n'
 	}
 
-	var parts = parse( content );
+	var parts = parse( content, fileName, this.sourceMap );
 
 	var output = '';
 
@@ -153,14 +160,11 @@ module.exports = function( content ) {
 		'		}\n' +
 		'	}\n' +
 		'} else if( typeof __rs__ === "function" && ( __rs__.prototype instanceof Regular ) ) {\n' +
-		// 'console.log(__regular_template__);' +
 		'	__rs__.prototype.template = __regular_template__;\n' +
 		'	__Component__ = __rs__;\n' +
 		'}\n';
 
 	output += 'module.exports = __Component__;';
-
-	console.log( 'output:', output );
 
 	// done
 	return output;

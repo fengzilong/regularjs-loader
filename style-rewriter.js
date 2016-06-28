@@ -75,10 +75,42 @@ module.exports = function( content, map ) {
 		plugins.push( autoprefixer )
 	}
 
+	// postcss options, for source maps
+	var file = this.resourcePath
+	var opts
+	opts = {
+		from: file,
+		to: file,
+		map: false
+	}
+	if (
+		this.sourceMap &&
+		!this.minimize &&
+		options.cssSourceMap !== false &&
+		process.env.NODE_ENV !== 'production' &&
+		!(isObject( postcssOptions ) && postcssOptions.options && postcssOptions.map)
+	) {
+		opts.map = {
+			inline: false,
+			annotation: false,
+			prev: map
+		}
+	}
+
+	// postcss options from configuration
+	if (isObject( postcssOptions ) && postcssOptions.options) {
+		for (var option in postcssOptions.options) {
+			if (!opts.hasOwnProperty( option )) {
+				opts[option] = postcssOptions.options[option]
+			}
+		}
+	}
+
 	postcss( plugins )
 		.process( content )
 		.then( function( result ) {
-			cb( null, result.css );
+			// var map = result.map && result.map.toJSON()
+			cb(null, result.css, map)
 		} )
 		.catch( function() {
 			console.log( e );
