@@ -20,14 +20,27 @@ var addId = postcss.plugin( 'add-id', function( opts ) {
 			}
 			node.selector = selectorParser( function( selectors ) {
 				selectors.each( function( selector ) {
+					var firstNode = null;
 					var node = null
-					selector.each( function( n ) {
-						if (n.type !== 'pseudo')
+
+					selector.each( function( n, i ) {
+						if (n.type !== 'pseudo') {
+							if( i === 0 ) {
+								firstNode = n;
+							}
 							node = n
+						}
 					} )
-					selector.insertAfter( node, selectorParser.attribute( {
+
+					selector.insertAfter( firstNode, selectorParser.attribute( {
 						attribute: opts.id
 					} ) )
+
+					if( firstNode !== node ) {
+						selector.insertAfter( node, selectorParser.attribute( {
+							attribute: opts.id
+						} ) )
+					}
 				} )
 			} ).process( node.selector ).result
 		} )
