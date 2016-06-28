@@ -1,6 +1,7 @@
 var loaderUtils = require( 'loader-utils' );
 var parse = require( './parser' );
 var assign = require('object-assign');
+var hash = require('hash-sum');
 var es6Promise = require('es6-promise');
 
 es6Promise.polyfill();
@@ -10,10 +11,13 @@ module.exports = function( content ) {
 
 	var loaderContext = this;
 	var filePath = this.resourcePath;
+	var moduleId = '_r-' + hash( filePath );
 	var selectorPath = require.resolve( './selector' );
-	var regularjsHtmlLoaderPath = require.resolve( './regularjs-html-loader' );
+	var precompileLoaderPath = require.resolve( './precompile' );
+	// use modified html-loader
+	var htmlLoaderPath = require.resolve( './html-loader' );
 	var defaultLoaders = {
-		html: 'rgl-loader!' + regularjsHtmlLoaderPath,
+		html: precompileLoaderPath + '!' + htmlLoaderPath,
 		css: 'style-loader!css-loader',
 		js: 'babel-loader?presets[]=es2015&plugins[]=transform-runtime&comments=false'
 	};
@@ -21,6 +25,10 @@ module.exports = function( content ) {
 		template: 'html',
 		style: 'css',
 		script: 'js'
+	};
+	var rewriters = {
+		style: require.resolve( './style-rewriter' ),
+		template: require.resolve( './template-rewriter.js' )
 	};
 
 	if( this.sourceMap && !this.minimize ) {
@@ -44,7 +52,15 @@ module.exports = function( content ) {
 	}
 
 	function getRewriter( type, scoped ) {
-		return '';
+		var meta = '?id=' + moduleId;
+		switch( type ) {
+			case 'template':
+				return rewriters.template + ( scoped ? meta + '&scoped=true!' : '!');
+			case 'style':
+				return rewriters.style + ( scoped ? meta + '&scoped=true!' : '!');
+			default:
+				return '';
+		}
 	}
 
 	function getLoaderString( type, part, scoped ) {
@@ -52,17 +68,25 @@ module.exports = function( content ) {
 		var loader = loaders[lang]
 		var rewriter = getRewriter( type, scoped )
 		if (loader !== undefined) {
-			loader = ensureBang( loader ) + rewriter
+			switch( type ) {
+				case 'template':
+					loader = rewriter + ensureBang( loader )
+					break;
+				case 'style':
+				case 'script':
+					loader = ensureBang( loader ) + rewriter
+					break;
+			}
 			return ensureBang( loader )
 		} else {
 			// unknown lang, infer the loader to be used
 			switch (type) {
 				case 'template':
-					return defaultLoaders.html + '!' + rewriter
+					return rewriter + defaultLoaders.html + '!'
 				case 'style':
 					return defaultLoaders.css + '!' + rewriter
 				case 'script':
-					return lang + '!'
+					return ''
 			}
 		}
 	}
@@ -88,48 +112,55 @@ module.exports = function( content ) {
 
 	var parts = parse( content );
 
-	var output = 'var __regular_script__, __regular_template__, __Component__;\n';
+	var output = '';
+
+	var hasScopedStyle = false;
 
 	// require style
 	parts.style.forEach(function( style, i ) {
-		output += getRequire( 'style', style, i );
+		if( style.scoped ) {
+			hasScopedStyle = true;
+		}
+		output += getRequire( 'style', style, i, style.scoped );
 	});
 
 	// require script
 	var script;
 	if (parts.script.length) {
 		script = parts.script[0];
-		output += '__regular_script__ = ' + getRequire( 'script', script, 0 );
+		output += 'var __regular_script__ = ' + getRequire( 'script', script, 0 );
 	}
 
 	// require template
 	var template;
 	if (parts.template.length) {
 		template = parts.template[0]
-		output += '__regular_template__ = ' + getRequire( 'template', template, 0 )
+		output += 'var __regular_template__ = ' + getRequire( 'template', template, 0, hasScopedStyle )
 	}
 
 	// find Regular
-	output += 'var Regular = require( "regularjs" );\n';
+	output += 'var Regular = require( "regularjs" );\n\n';
 
-	output += 'var rs = __regular_script__;\n' +
-		'if (rs.__esModule) rs = rs.default;\n' +
-		'if( typeof rs === "object" ) {\n' +
-		'	rs.template = __regular_template__;\n' +
-		'	__Component__ = Regular.extend(rs);\n' +
-		'	if( typeof rs.component === "object" ) {\n' +
-		'		for( var i in rs.component ) {\n' +
-		'			__Component__.component(i, rs.component[ i ]);\n' +
+	output += 'var __rs__ = __regular_script__;\n' +
+		'if (__rs__.__esModule) __rs__ = __rs__.default;\n\n' +
+		'var __Component__;\n' +
+		'if( typeof __rs__ === "object" ) {\n' +
+		'	__rs__.template = __regular_template__;\n' +
+		'	__Component__ = Regular.extend(__rs__);\n' +
+		'	if( typeof __rs__.component === "object" ) {\n' +
+		'		for( var i in __rs__.component ) {\n' +
+		'			__Component__.component(i, __rs__.component[ i ]);\n' +
 		'		}\n' +
 		'	}\n' +
-		'} else if( typeof rs === "function" && ( rs.prototype instanceof Regular ) ) {\n' +
-		'	rs.prototype.template = __regular_template__;\n' +
-		'	__Component__ = rs;\n' +
+		'} else if( typeof __rs__ === "function" && ( __rs__.prototype instanceof Regular ) ) {\n' +
+		// 'console.log(__regular_template__);' +
+		'	__rs__.prototype.template = __regular_template__;\n' +
+		'	__Component__ = __rs__;\n' +
 		'}\n';
 
 	output += 'module.exports = __Component__;';
 
-	// console.log( 'output:', output );
+	console.log( 'output:', output );
 
 	// done
 	return output;

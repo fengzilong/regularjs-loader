@@ -42,10 +42,10 @@ function parse( content ) {
 		locationInfo: true
 	} );
 
-	fragment.childNodes.forEach(function (node) {
+	fragment.childNodes.forEach(function( node ) {
 		var tagName = node.tagName;
 		var lang = getAttribute( 'lang' );
-		var node;
+		var scoped = getAttribute( node, 'scoped' ) != null
 
 		if( !output[ tagName ] ) {
 			return;
@@ -57,9 +57,6 @@ function parse( content ) {
 
 		var start = node.childNodes[0].__location.startOffset;
 		var end = node.childNodes[ node.childNodes.length - 1 ].__location.endOffset;
-
-		// console.log( tagName, 'start', start );
-		// console.log( tagName, 'end', end );
 
 		var result;
 		if( tagName === 'script' ) {
@@ -76,6 +73,7 @@ function parse( content ) {
 		output[ tagName ].push({
 			content: result,
 			lang: lang,
+			scoped: scoped,
 		});
 	});
 
