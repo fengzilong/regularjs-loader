@@ -52,7 +52,7 @@ App.rgl
 <style lang="mcss" scoped>
 	.outter {
 		.inner {
-			color: ;
+			color: #000;
 		}
 	}
 </style>
