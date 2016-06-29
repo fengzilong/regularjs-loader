@@ -1,6 +1,6 @@
 {
   "name": "regularjs-loader",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "webpack loader for regularjs",
   "main": "index.js",
   "scripts": {},
