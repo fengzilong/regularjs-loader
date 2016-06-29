@@ -1,4 +1,4 @@
-# regularjs-loader
+# regularjs-loader [![npm package](https://img.shields.io/npm/v/regularjs-loader.svg?style=flat-square)](https://www.npmjs.org/package/regularjs-loader)
 
 webpack loader for regularjs
 
@@ -49,6 +49,12 @@ new App().$inject( document.body );
 App.rgl
 
 ```html
+<style>
+	html {
+		background-color: #F2F2F2;
+	}
+</style>
+
 <style lang="mcss" scoped>
 	.outter {
 		.inner {
@@ -56,15 +62,19 @@ App.rgl
 		}
 	}
 </style>
+
 <template>
 	<div class="outter">
 		<div class="inner">Regularjs is awesome <ui-button text="Get it"></ui-button></div>
 	</div>
 </template>
+
 <script>
 	import Button from './Button.rgl';
 
+	// export options here
 	export default {
+		// shorthand for registering components in current component scope
 		component: {
 			'ui-button': Button,
 		},
@@ -81,10 +91,11 @@ Button.rgl
 <template>
 	<button>{ text }</button>
 </template>
+
 <script>
 	import Base from 'path/to/Base.rgl';
 
-	//you can also export Component Constructor here
+	// or export component constructor here
 	export default Base.extend({
 		init() {
 			console.log( 'Button' );
@@ -92,6 +103,8 @@ Button.rgl
 	});
 </script>
 ```
+
+Try it out!
 
 ## Related
 
