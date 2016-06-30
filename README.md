@@ -65,7 +65,7 @@ App.rgl
 
 <template>
 	<div class="outter">
-		<div class="inner">Regularjs is awesome <ui-button text="Get it"></ui-button></div>
+		<div class="inner">RegularJs is Awesome <ui-button text="get it"></ui-button></div>
 	</div>
 </template>
 

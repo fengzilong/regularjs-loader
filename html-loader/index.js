@@ -77,10 +77,8 @@ module.exports = function(content) {
 			"removeAttributeQuotes",
 			"useShortDoctype",
 			"keepClosingSlash",
-			"minifyJS",
-			"minifyCSS",
 			"removeScriptTypeAttributes",
-			"removeStyleTypeAttributes",
+			"removeStyleLinkTypeAttributes"
 		].forEach(function(name) {
 			if(typeof minimizeOptions[name] === "undefined") {
 				minimizeOptions[name] = true;
