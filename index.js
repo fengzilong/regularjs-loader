@@ -119,7 +119,7 @@ module.exports = function( content ) {
 
 	var parts = parse( content, fileName, this.sourceMap );
 
-	var output = '';
+	var output = 'var __regular_script__, __regular_template__;\n';
 
 	var hasScopedStyle = false;
 
@@ -135,20 +135,20 @@ module.exports = function( content ) {
 	var script;
 	if (parts.script.length) {
 		script = parts.script[0];
-		output += 'var __regular_script__ = ' + getRequire( 'script', script, 0 );
+		output += '__regular_script__ = ' + getRequire( 'script', script, 0 );
 	}
 
 	// require template
 	var template;
 	if (parts.template.length) {
 		template = parts.template[0]
-		output += 'var __regular_template__ = ' + getRequire( 'template', template, 0, hasScopedStyle )
+		output += '__regular_template__ = ' + getRequire( 'template', template, 0, hasScopedStyle )
 	}
 
 	// find Regular
 	output += 'var Regular = require( "regularjs" );\n\n';
 
-	output += 'var __rs__ = __regular_script__;\n' +
+	output += 'var __rs__ = __regular_script__ || {};\n' +
 		'if (__rs__.__esModule) __rs__ = __rs__.default;\n\n' +
 		'var __Component__;\n' +
 		'if( typeof __rs__ === "object" ) {\n' +
