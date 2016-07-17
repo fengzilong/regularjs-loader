@@ -5,7 +5,7 @@ webpack loader for regularjs
 ## Installation
 
 ```bash
-$ npm i regularjs-loader -D
+$ npm i regularjs-loader
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ webpack.config.js
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
-	...
+	// ...
 	entry: './index.js',
 	module: {
 		loaders: [
@@ -33,7 +33,7 @@ module.exports = {
 		}
 	},
 	plugins: [
-		...
+		// ...
 		new ExtractTextPlugin( 'app.css' )
 	]
 };
@@ -106,8 +106,14 @@ Button.rgl
 
 Try it out!
 
+## Who is using it
+
+- [pure](https://github.com/fengzilong/pure)
+
 ## Related
 
+- [regularjs](https://github.com/regularjs/regular)
+
+## Thanks
+
 - [vue-loader](https://github.com/vuejs/vue-loader)
-- [rgl-loader](https://github.com/regularjs/rgl-loader)
-- [html-loader](https://github.com/webpack/html-loader)
