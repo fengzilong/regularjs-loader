@@ -1,6 +1,6 @@
 # regularjs-loader [![npm package](https://img.shields.io/npm/v/regularjs-loader.svg?style=flat-square)](https://www.npmjs.org/package/regularjs-loader)
 
-webpack loader for [regularjs](https://github.com/regularjs/regular)
+> webpack loader for [regularjs](https://github.com/regularjs/regular)
 
 Here is a simple example using regularjs-loader
 
