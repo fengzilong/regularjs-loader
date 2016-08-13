@@ -1,8 +1,8 @@
 var loaderUtils = require('loader-utils');
 
-// type if consequent
-// type list body
-// type element children
+// type if -> consequent && alternate
+// type list -> body
+// type element -> children
 
 function walk( tree, fn ) {
 	tree.forEach(function( v ) {
@@ -12,6 +12,7 @@ function walk( tree, fn ) {
 				walk( v.children, fn );
 			}
 		} else if( v.type === 'if' ) {
+			walk( v.alternate, fn );
 			walk( v.consequent, fn );
 		} else if( v.type === 'list' ) {
 			walk( v.body, fn );
