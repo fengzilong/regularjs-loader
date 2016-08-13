@@ -149,7 +149,8 @@ module.exports = function( content ) {
 	output += 'var Regular = require( "regularjs" );\n\n';
 
 	output += 'var __rs__ = __regular_script__ || {};\n' +
-		'if (__rs__.__esModule) __rs__ = __rs__.default;\n\n' +
+		'if (__rs__.__esModule) __rs__ = __rs__.default;\n' +
+		'if (Regular.__esModule) Regular = Regular.default;\n\n' +
 		'var __Component__;\n' +
 		'if( typeof __rs__ === "object" ) {\n' +
 		'	__rs__.template = __regular_template__;\n' +
