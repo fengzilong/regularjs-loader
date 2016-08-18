@@ -77,7 +77,7 @@ App.rgl
 	// export options here
 	export default {
 		// shorthand for registering components in current component scope
-		component: {
+		components: {
 			'ui-button': Button,
 		},
 		init() {

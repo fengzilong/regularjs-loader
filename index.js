@@ -151,13 +151,14 @@ module.exports = function( content ) {
 	output += 'var __rs__ = __regular_script__ || {};\n' +
 		'if (__rs__.__esModule) __rs__ = __rs__.default;\n' +
 		'if (Regular.__esModule) Regular = Regular.default;\n\n' +
-		'var __Component__;\n' +
+		'var __Component__, __cps__;\n' +
 		'if( typeof __rs__ === "object" ) {\n' +
 		'	__rs__.template = __regular_template__;\n' +
 		'	__Component__ = Regular.extend(__rs__);\n' +
-		'	if( typeof __rs__.component === "object" ) {\n' +
-		'		for( var i in __rs__.component ) {\n' +
-		'			__Component__.component(i, __rs__.component[ i ]);\n' +
+		'	__cps__ = __rs__.components || __rs__.component;\n' +
+		'	if( typeof __cps__ === "object" ) {\n' +
+		'		for( var i in __cps__ ) {\n' +
+		'			__Component__.component(i, __cps__[ i ]);\n' +
 		'		}\n' +
 		'	}\n' +
 		'} else if( typeof __rs__ === "function" && ( __rs__.prototype instanceof Regular ) ) {\n' +
