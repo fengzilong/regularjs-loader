@@ -67,7 +67,7 @@ App.rgl
 
 <template>
 	<div class="outter">
-		<div class="inner">RegularJs is Awesome <ui-button text="get it"></ui-button></div>
+		<div class="inner">RegularJs is Awesome <Button text="get it"></Button></div>
 	</div>
 </template>
 
@@ -78,7 +78,7 @@ App.rgl
 	export default {
 		// shorthand for registering components in current component scope
 		components: {
-			'ui-button': Button,
+			'Button': Button,
 		},
 		init() {
 			console.log( 'App' );
