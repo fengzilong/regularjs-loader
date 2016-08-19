@@ -108,10 +108,6 @@ Button.rgl
 
 Try it out!
 
-## Who is using it
-
-- [pure](https://github.com/fengzilong/pure)
-
 ## Related
 
 - [regularjs](https://github.com/regularjs/regular)
